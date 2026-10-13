@@ -1,1 +1,355 @@
-test
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stripe Elements Playground</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    :root {
+      --bg: #f6f8fa; --card: #fff; --text: #1f2328; --muted: #656d76;
+      --border: #d0d7de; --accent: #635bff; --ok: #1a7f37; --err: #cf222e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #8d96a0; --border: #30363d; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; display: grid; gap: 16px; grid-template-columns: 340px 1fr; }
+    @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+    h1 { grid-column: 1 / -1; margin: 0; font-size: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .card h2 { margin: 0 0 12px; font-size: 15px; }
+    label { display: block; margin: 10px 0 4px; color: var(--muted); font-size: 12px; }
+    input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    button { padding: 9px 14px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    button:disabled { opacity: .5; cursor: default; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+    #element-host { min-height: 60px; }
+    .stripe-field { padding: 12px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; background: #fff; transition: border-color .15s, box-shadow .15s; }
+    .stripe-field--focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 91, 255, .2); }
+    .stripe-field--invalid { border-color: var(--err); }
+    .stripe-field--complete { border-color: var(--ok); }
+    .payment-element { margin-bottom: 8px; }
+    .billing-details { border: 0; padding: 0; margin: 0 0 16px; }
+    .billing-details legend { padding: 0; font-weight: 600; }
+    .billing-details label input { margin-top: 4px; }
+    #log { margin: 0; max-height: 360px; overflow: auto; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+    .ok { color: var(--ok); } .err { color: var(--err); }
+    .right { display: grid; gap: 16px; align-content: start; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Stripe Elements Playground</h1>
+
+  <section class="card">
+    <h2>Settings</h2>
+    <label for="pk">Publishable key</label>
+    <input id="pk" placeholder="pk_test_..." autocomplete="off">
+
+    <label for="mode">Element</label>
+    <select id="mode">
+      <option value="payment-deferred">Payment Element — deferred (no client secret)</option>
+      <option value="payment-secret">Payment Element — with client secret</option>
+      <option value="card">Card Element (single line)</option>
+      <option value="split">Card Number / Expiry / CVC</option>
+    </select>
+
+    <div id="deferred-opts">
+      <div class="row">
+        <div>
+          <label for="intent">Intent</label>
+          <select id="intent"><option value="payment">payment</option><option value="setup">setup</option></select>
+        </div>
+        <div>
+          <label for="currency">Currency</label>
+          <input id="currency" value="usd">
+        </div>
+      </div>
+      <label for="amount">Amount (minor units)</label>
+      <input id="amount" type="number" value="1000" min="1">
+      <label for="pmtypes">payment_method_types (comma-separated, empty = automatic)</label>
+      <input id="pmtypes" placeholder="card,link">
+    </div>
+
+    <label for="secret">Client secret (pi_..._secret_... / seti_..._secret_...)</label>
+    <input id="secret" placeholder="optional for deferred / card modes" autocomplete="off">
+    <p class="hint">Without a client secret you can still create a PaymentMethod (pm_...).</p>
+
+    <div class="row">
+      <div>
+        <label for="theme">Theme</label>
+        <select id="theme"><option>stripe</option><option>night</option><option>flat</option></select>
+      </div>
+      <div>
+        <label for="locale">Locale</label>
+        <input id="locale" value="auto">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="mount">Mount</button>
+      <button id="share" class="secondary">Copy link with settings</button>
+    </div>
+  </section>
+
+  <div class="right">
+    <section class="card">
+      <h2>Element</h2>
+      <form id="form">
+        <fieldset id="billing-details" class="billing-details">
+          <legend>Billing details</legend>
+          <label for="cardholder-name">Cardholder name</label>
+          <input id="cardholder-name" class="billing-input billing-input--name" name="name" placeholder="Jane Doe" autocomplete="cc-name">
+          <label>Email
+            <input type="email" class="billing-input billing-input--email" name="email" data-testid="billing-email" placeholder="jane@example.com" autocomplete="email">
+          </label>
+          <label for="billing-phone">Phone</label>
+          <input id="billing-phone" type="tel" class="billing-input" name="phone" placeholder="+1 555 000 0000" autocomplete="tel">
+        </fieldset>
+        <div id="element-host"><p class="hint">Enter a publishable key and press Mount.</p></div>
+        <div class="actions">
+          <button type="button" id="create-pm" disabled>Create PaymentMethod</button>
+          <button type="submit" id="confirm" disabled>Confirm with client secret</button>
+        </div>
+      </form>
+      <p class="hint">Test cards: 4242 4242 4242 4242 · 3DS: 4000 0027 6000 3184 · decline: 4000 0000 0000 0002</p>
+    </section>
+
+    <section class="card">
+      <div class="row" style="align-items:center">
+        <h2 style="margin:0">Log</h2>
+        <div style="text-align:right"><button id="clear" class="secondary" type="button">Clear</button></div>
+      </div>
+      <pre id="log"></pre>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const FIELDS = ['pk', 'mode', 'intent', 'currency', 'amount', 'pmtypes', 'secret', 'theme', 'locale'];
+  const STORE_KEY = 'stripe-elements-playground';
+
+  const FIELD_CLASSES = {
+    base: 'stripe-field',
+    focus: 'stripe-field--focus',
+    invalid: 'stripe-field--invalid',
+    complete: 'stripe-field--complete',
+    empty: 'stripe-field--empty',
+  };
+
+  let stripe = null, elements = null, mounted = {};
+
+  // Stripe renders inputs inside a cross-origin iframe, so only the iframe tag itself can be tagged from here
+  function tagFrame(container, id) {
+    const frame = container.querySelector('iframe');
+    if (!frame) return;
+    frame.id = `${id}-frame`;
+    frame.classList.add('stripe-frame');
+  }
+
+  function log(msg, data, cls) {
+    const line = document.createElement('div');
+    if (cls) line.className = cls;
+    const ts = new Date().toLocaleTimeString();
+    line.textContent = `[${ts}] ${msg}` + (data !== undefined ? '\n' + JSON.stringify(data, null, 2) : '');
+    $('log').prepend(line);
+  }
+
+  function readSettings() {
+    return Object.fromEntries(FIELDS.map((f) => [f, $(f).value.trim()]));
+  }
+
+  function loadSettings() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch (_) {}
+    const params = new URLSearchParams(location.search);
+    FIELDS.forEach((f) => {
+      const v = params.get(f) ?? saved[f];
+      if (v != null && v !== '') $(f).value = v;
+    });
+  }
+
+  function saveSettings(s) {
+    const { secret, ...rest } = s;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(rest)); } catch (_) {}
+  }
+
+  function updateVisibility() {
+    $('deferred-opts').style.display = $('mode').value === 'payment-deferred' ? '' : 'none';
+  }
+
+  function intentKind(secret) {
+    if (secret.startsWith('seti_')) return 'setup';
+    if (secret.startsWith('pi_')) return 'payment';
+    return null;
+  }
+
+  function returnUrl() {
+    return location.origin + location.pathname;
+  }
+
+  function mount() {
+    const s = readSettings();
+    saveSettings(s);
+    if (!s.pk.startsWith('pk_')) { log('Publishable key must start with pk_', undefined, 'err'); return; }
+    if (s.mode === 'payment-secret' && !intentKind(s.secret)) {
+      log('This mode needs a pi_/seti_ client secret', undefined, 'err'); return;
+    }
+
+    Object.values(mounted).forEach((el) => el.destroy());
+    mounted = {};
+    $('element-host').innerHTML = '';
+
+    stripe = Stripe(s.pk, { locale: s.locale || 'auto' });
+    const appearance = { theme: s.theme };
+    const host = $('element-host');
+
+    function mountInto(type, id, cls, options) {
+      const container = document.createElement('div');
+      container.id = id;
+      container.className = cls;
+      host.appendChild(container);
+      mounted[type] = elements.create(type, options);
+      mounted[type].mount(container);
+      mounted[type].on('ready', () => tagFrame(container, id));
+    }
+
+    if (s.mode === 'payment-deferred') {
+      const opts = { mode: s.intent, currency: s.currency.toLowerCase(), appearance, paymentMethodCreation: 'manual' };
+      if (s.intent === 'payment') opts.amount = Number(s.amount);
+      if (s.pmtypes) opts.paymentMethodTypes = s.pmtypes.split(',').map((t) => t.trim()).filter(Boolean);
+      elements = stripe.elements(opts);
+      mountInto('payment', 'payment-element', 'stripe-element payment-element');
+    } else if (s.mode === 'payment-secret') {
+      elements = stripe.elements({ clientSecret: s.secret, appearance });
+      mountInto('payment', 'payment-element', 'stripe-element payment-element');
+    } else if (s.mode === 'card') {
+      elements = stripe.elements({ appearance });
+      mountInto('card', 'card-element', 'stripe-element card-element', { classes: FIELD_CLASSES });
+    } else {
+      elements = stripe.elements({ appearance });
+      mountInto('cardNumber', 'card-number-element', 'stripe-element card-number', { classes: FIELD_CLASSES, showIcon: true });
+      mountInto('cardExpiry', 'card-expiry-element', 'stripe-element card-expiry', { classes: FIELD_CLASSES });
+      mountInto('cardCvc', 'card-cvc-element', 'stripe-element card-cvc', { classes: FIELD_CLASSES });
+    }
+
+    Object.entries(mounted).forEach(([name, el]) => {
+      el.on('ready', () => log(`${name}: ready`));
+      el.on('change', (e) => { if (e.error) log(`${name}: ${e.error.message}`, undefined, 'err'); });
+      el.on('loaderror', (e) => log(`${name}: loaderror`, e.error, 'err'));
+    });
+
+    $('create-pm').disabled = s.mode === 'payment-secret';
+    $('confirm').disabled = !s.secret;
+    log(`Mounted ${s.mode}`);
+  }
+
+  function cardElement() {
+    return mounted.card || mounted.cardNumber;
+  }
+
+  function billingDetails() {
+    const form = $('form');
+    const details = {
+      name: form.elements.name.value.trim(),
+      email: form.elements.email.value.trim(),
+      phone: form.elements.phone.value.trim(),
+    };
+    return Object.fromEntries(Object.entries(details).filter(([, v]) => v));
+  }
+
+  async function createPaymentMethod() {
+    let res;
+    if (mounted.payment) {
+      const sub = await elements.submit();
+      if (sub.error) return log('elements.submit failed', sub.error, 'err');
+      res = await stripe.createPaymentMethod({ elements, params: { billing_details: billingDetails() } });
+    } else {
+      res = await stripe.createPaymentMethod({ type: 'card', card: cardElement(), billing_details: billingDetails() });
+    }
+    if (res.error) log('createPaymentMethod failed', res.error, 'err');
+    else log(`PaymentMethod created: ${res.paymentMethod.id}`, res.paymentMethod, 'ok');
+  }
+
+  async function confirm() {
+    const s = readSettings();
+    const kind = intentKind(s.secret);
+    if (!kind) return log('Client secret must start with pi_ or seti_', undefined, 'err');
+    let res;
+
+    if (mounted.payment) {
+      if (s.mode === 'payment-deferred') {
+        const sub = await elements.submit();
+        if (sub.error) return log('elements.submit failed', sub.error, 'err');
+      }
+      const args = {
+        elements,
+        confirmParams: { return_url: returnUrl(), payment_method_data: { billing_details: billingDetails() } },
+        redirect: 'if_required',
+      };
+      if (s.mode === 'payment-deferred') args.clientSecret = s.secret;
+      res = kind === 'setup' ? await stripe.confirmSetup(args) : await stripe.confirmPayment(args);
+    } else {
+      const data = { payment_method: { card: cardElement(), billing_details: billingDetails() } };
+      res = kind === 'setup'
+        ? await stripe.confirmCardSetup(s.secret, data)
+        : await stripe.confirmCardPayment(s.secret, data);
+    }
+
+    if (res.error) log('Confirm failed', res.error, 'err');
+    else {
+      const intent = res.paymentIntent || res.setupIntent;
+      log(`${intent.id}: ${intent.status}`, intent, 'ok');
+    }
+  }
+
+  async function handleRedirectReturn() {
+    const p = new URLSearchParams(location.search);
+    const piSecret = p.get('payment_intent_client_secret');
+    const siSecret = p.get('setup_intent_client_secret');
+    if (!piSecret && !siSecret) return;
+    const pk = $('pk').value.trim();
+    if (!pk) return log('Returned from redirect, but no publishable key to retrieve the intent', undefined, 'err');
+    const s = Stripe(pk);
+    const res = piSecret ? await s.retrievePaymentIntent(piSecret) : await s.retrieveSetupIntent(siSecret);
+    if (res.error) return log('Retrieve after redirect failed', res.error, 'err');
+    const intent = res.paymentIntent || res.setupIntent;
+    log(`Returned from redirect — ${intent.id}: ${intent.status}`, intent, intent.status === 'succeeded' ? 'ok' : undefined);
+    history.replaceState(null, '', returnUrl());
+  }
+
+  function copyLink() {
+    const s = readSettings();
+    const params = new URLSearchParams();
+    FIELDS.filter((f) => f !== 'secret' && s[f]).forEach((f) => params.set(f, s[f]));
+    const url = `${returnUrl()}?${params}`;
+    navigator.clipboard.writeText(url).then(
+      () => log('Link copied (client secret is not included)', url),
+      () => log('Clipboard unavailable', url)
+    );
+  }
+
+  $('mode').addEventListener('change', updateVisibility);
+  $('mount').addEventListener('click', mount);
+  $('share').addEventListener('click', copyLink);
+  $('clear').addEventListener('click', () => { $('log').innerHTML = ''; });
+  $('create-pm').addEventListener('click', () => createPaymentMethod().catch((e) => log(e.message, undefined, 'err')));
+  $('form').addEventListener('submit', (e) => { e.preventDefault(); confirm().catch((err) => log(err.message, undefined, 'err')); });
+  $('secret').addEventListener('input', () => { $('confirm').disabled = !stripe || !$('secret').value.trim(); });
+
+  loadSettings();
+  updateVisibility();
+  handleRedirectReturn();
+  if ($('pk').value.startsWith('pk_')) mount();
+})();
+</script>
+</body>
+</html>
