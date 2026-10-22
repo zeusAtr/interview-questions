@@ -1,0 +1,58 @@
+2026-10-21 11:02:57.880 +00:00 [DBG] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Incoming POST /api/v2/payments ip=10.40.12.7 ua="Spaceship-Checkout/3.14.2"
+2026-10-21 11:02:57.915 +00:00 [DBG] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Idempotency-Key=idem_3a9f71c2 accepted (new)
+2026-10-21 11:02:58.102 +00:00 [INF] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 CreatePayment requested orderId=ord_8F3K2Q userId=u_78213 amount=24.88 currency=USD method=card
+2026-10-21 11:02:58.221 +00:00 [INF] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Payment created paymentId=pay_01HX7Q4M9N2R status=PENDING amountMinor=2488 currency=USD
+2026-10-21 11:02:58.305 +00:00 [DBG] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Tokenizing card pan=4111111111111111 exp=12/28 cvv=737 holder="JOHN SMITH"
+2026-10-21 11:02:58.611 +00:00 [INF] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Card tokenized token=tok_v1_c1d2e3f4 last4=4242 brand=visa expiry=12/28
+2026-10-21 11:02:58.640 +00:00 [WRN] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Vault token TTL below 1h (ttl=2731s), renewing
+2026-10-21 11:02:58.690 +00:00 [INF] provider-gw    traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 POST https://checkout-test.provider.example/v70/payments merchantAccount=NamecheapCOM amountMinor=24880 currency=USD reference=pay_01HX7Q4M9N2R
+2026-10-21 11:02:59.402 +00:00 [INF] provider-gw    traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Provider response http=200 pspReference=883761234567890A resultCode=RedirectShopper action.type=threeDS2 latencyMs=712
+2026-10-21 11:02:59.410 +00:00 [INF] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Payment status PENDING -> REQUIRES_ACTION paymentId=pay_01HX7Q4M9N2R action=threeDS2
+2026-10-21 11:02:59.418 +00:00 [DBG] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Response 202 Accepted bodyBytes=1193
+2026-10-21 11:03:04.007 +00:00 [DBG] ncpay-api      traceId=9a0f3c21-77be-4d0e-b1c4-5e8d2a6f0b93 Incoming GET /api/v2/payments/pay_01HX7Q4M9N2R ip=10.40.12.7
+2026-10-21 11:03:04.021 +00:00 [DBG] ncpay-api      traceId=9a0f3c21-77be-4d0e-b1c4-5e8d2a6f0b93 Response 200 status=REQUIRES_ACTION
+2026-10-21 11:03:19.552 +00:00 [DBG] ncpay-api      traceId=9a0f3c21-77be-4d0e-b1c4-5e8d2a6f0b93 Incoming GET /api/v2/payments/pay_01HX7Q4M9N2R ip=10.40.12.7
+2026-10-21 11:03:19.560 +00:00 [DBG] ncpay-api      traceId=9a0f3c21-77be-4d0e-b1c4-5e8d2a6f0b93 Response 200 status=REQUIRES_ACTION
+2026-10-21 11:03:41.877 +00:00 [INF] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 3DS result received paymentId=pay_01HX7Q4M9N2R threeDSResult=eyJ0cmFuc1N0YXR1cyI6IlkifQ== orderId=ord_8F3K2Q
+2026-10-21 11:03:42.015 +00:00 [INF] provider-gw    traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 POST https://checkout-test.provider.example/v70/payments/details pspReference=883761234567890A
+2026-10-21 11:03:42.733 +00:00 [INF] provider-gw    traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Provider response http=200 pspReference=883761234567890A resultCode=Refused refusalReason="NOT_ENOUGH_BALANCE" refusalReasonCode=12 latencyMs=718
+2026-10-21 11:03:42.740 +00:00 [INF] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Payment status REQUIRES_ACTION -> AUTHORIZED paymentId=pay_01HX7Q4M9N2R pspReference=883761234567890A
+2026-10-21 11:03:42.801 +00:00 [INF] ncpay-worker   traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Capture job enqueued paymentId=pay_01HX7Q4M9N2R delayMs=0
+2026-10-21 11:03:42.850 +00:00 [DBG] ncpay-api      traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Response 200 status=AUTHORIZED
+2026-10-21 11:03:43.120 +00:00 [INF] provider-gw    traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c7e POST https://checkout-test.provider.example/v70/payments/883761234567890A/captures amountMinor=2488 currency=USD
+2026-10-21 11:03:43.655 +00:00 [INF] provider-gw    traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Provider response http=201 pspReference=883761234567890A captureReference=CAP_4F19A0 status=received latencyMs=535
+2026-10-21 11:03:43.660 +00:00 [INF] ncpay-worker   traceId=7c1e9a4d-5b2f-4e8a-9d3c-1f6b8e2a4c70 Payment status AUTHORIZED -> CAPTURE_PENDING paymentId=pay_01HX7Q4M9N2R captureReference=CAP_4F19A0
+2026-10-21 11:03:44.002 +00:00 [DBG] ncpay-worker   GC pause 11ms gen=1 heapMb=412
+2026-10-21 11:03:50.771 +00:00 [DBG] ncpay-webhooks Incoming POST /webhooks/provider ip=91.212.44.18 contentLength=1842
+2026-10-21 11:03:51.004 +00:00 [INF] ncpay-webhooks traceId=e4d7b2a9-1c3f-4a8e-9b5d-7f2e6c0a1d84 Webhook received eventId=evt_5f2c8a71 eventCode=CAPTURE success=true pspReference=883761234567890A amountMinor=2488 currency=USD eventDate=2026-10-21T14:03:50+03:00
+2026-10-21 11:03:51.090 +00:00 [INF] ncpay-webhooks traceId=e4d7b2a9-1c3f-4a8e-9b5d-7f2e6c0a1d84 HMAC signature verified keyId=hmac_2026_q3
+2026-10-21 11:03:51.133 +00:00 [INF] ncpay-worker   traceId=e4d7b2a9-1c3f-4a8e-9b5d-7f2e6c0a1d84 Payment status CAPTURE_PENDING -> CAPTURED paymentId=pay_01HX7Q4M9N2R amountMinor=2488
+2026-10-21 11:03:51.201 +00:00 [INF] billing-svc    traceId=e4d7b2a9-1c3f-4a8e-9b5d-7f2e6c0a1d84 Order ord_8F3K2Q marked PAID, funds credited userId=u_78231 amount=24.88 USD txnId=bt_7781
+2026-10-21 11:03:51.230 +00:00 [DBG] ncpay-webhooks traceId=e4d7b2a9-1c3f-4a8e-9b5d-7f2e6c0a1d84 Response 200 "[accepted]"
+2026-10-21 11:03:55.310 +00:00 [WRN] ncpay-webhooks Incoming POST /webhooks/provider eventCode=PING signature header missing, ignored (ping events are unsigned)
+2026-10-21 11:04:12.388 +00:00 [INF] ncpay-webhooks traceId=0c6a9e13-8b2d-4f7a-a1e5-2d9c4b8f6e07 Webhook received eventId=evt_5f2c8a71 eventCode=CAPTURE success=true pspReference=883761234567890A amountMinor=2488 currency=USD eventDate=2026-10-21T14:03:50+03:00
+2026-10-21 11:04:12.421 +00:00 [INF] ncpay-webhooks traceId=0c6a9e13-8b2d-4f7a-a1e5-2d9c4b8f6e07 HMAC signature verified keyId=hmac_2026_q3
+2026-10-21 11:04:12.450 +00:00 [INF] ncpay-worker   traceId=0c6a9e13-8b2d-4f7a-a1e5-2d9c4b8f6e07 Payment status CAPTURED -> CAPTURED paymentId=pay_01HX7Q4M9N2R amountMinor=2488
+2026-10-21 11:04:12.512 +00:00 [INF] billing-svc    traceId=0c6a9e13-8b2d-4f7a-a1e5-2d9c4b8f6e07 Order ord_8F3K2Q marked PAID, funds credited userId=u_78213 amount=24.88 USD txnId=bt_7782
+2026-10-21 11:04:12.540 +00:00 [DBG] ncpay-webhooks traceId=0c6a9e13-8b2d-4f7a-a1e5-2d9c4b8f6e07 Response 200 "[accepted]"
+2026-10-21 11:04:30.000 +00:00 [INF] ncpay-worker   Reconciliation tick: pending=0 capturePending=0 failed=0 lastRunMs=38
+2026-10-21 11:09:30.000 +00:00 [INF] ncpay-worker   Reconciliation tick: pending=0 capturePending=0 failed=0 lastRunMs=41
+2026-10-21 11:14:30.000 +00:00 [INF] ncpay-worker   Reconciliation tick: pending=0 capturePending=0 failed=0 lastRunMs=37
+2026-10-21 12:16:48.117 +00:00 [WRN] provider-gw    Circuit breaker provider-gw: HALF_OPEN after 2 timeouts in 60s window
+2026-10-21 12:16:49.204 +00:00 [INF] provider-gw    Circuit breaker provider-gw: CLOSED (probe ok, latencyMs=204)
+2026-10-21 12:17:04.980 +00:00 [DBG] ncpay-api      traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Incoming POST /api/v2/payments/pay_01HX7Q4M9N2R/refunds ip=10.40.18.3 ua="Spaceship-Support/1.9.0"
+2026-10-21 12:17:05.019 +00:00 [INF] ncpay-api      traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 RefundPayment requested paymentId=pay_01HX7Q4M9N2R amount=24.88 currency=EUR reason=customer_request initiatedBy=support:agent_114
+2026-10-21 12:17:05.044 +00:00 [DBG] ncpay-api      traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Idempotency-Key=idem_3a9f71c2 accepted (new)
+2026-10-21 12:17:05.300 +00:00 [INF] provider-gw    traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 POST https://checkout-test.provider.example/v70/payments/883761234567890A/refunds amountMinor=2488 currency=EUR reference=rf_01HX7ZK3P8QA
+2026-10-21 12:17:05.912 +00:00 [INF] provider-gw    traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Provider response http=200 body={"success":false,"errorCode":"014","message":"Insufficient balance available for refund"} latencyMs=612
+2026-10-21 12:17:05.920 +00:00 [INF] ncpay-api      traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Refund created refundId=rf_01HX7ZK3P8QA status=REFUNDED amountMinor=2488 currency=EUR
+2026-10-21 12:17:05.961 +00:00 [DBG] ncpay-api      traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Response 201 Created
+2026-10-21 12:17:06.102 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Notification enqueued template=refund_confirmed userId=u_78213 channel=email
+2026-10-21 12:17:06.220 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 System.NullReferenceException: Object reference not set to an instance of an object. at NcPay.Notifications.EmailComposer.Build(RefundNotification n) in /src/NcPay.Notifications/EmailComposer.cs:line 87
+2026-10-21 12:17:06.221 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Email send attempt 1/3 failed, retry in 30s
+2026-10-21 12:17:36.230 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Email send attempt 2/3 failed, retry in 30s
+2026-10-21 12:18:06.241 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Email send attempt 3/3 failed, retry in 30s
+2026-10-21 12:18:36.250 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Email send attempt 4/3 scheduled, retry in 30s
+2025-10-21 12:19:06.260 +00:00 [INF] ncpay-worker   traceId=b02d44f1-9e7a-4c15-8a6e-3d2f0c9b7e51 Email send attempt 5/3 failed, giving up
+2026-10-21 12:19:30.000 +00:00 [INF] ncpay-worker   Reconciliation tick: pending=0 capturePending=0 failed=0 lastRunMs=40
+2026-10-21 12:19:30.044 +00:00 [DBG] ncpay-worker   Reconciliation: payment pay_01HX7Q4M9N2R status=CAPTURED refunds=1 refundedMinor=2488 netMinor=0 ok
